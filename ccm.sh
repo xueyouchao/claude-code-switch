@@ -1452,13 +1452,18 @@ show_status() {
                     *deepseek*) echo "   Provider: $(t 'openrouter_provider_deepseek')" ;;
                     *minimax*) echo "   Provider: $(t 'openrouter_provider_minimax')" ;;
                     *qwen*) echo "   Provider: $(t 'openrouter_provider_qwen')" ;;
-                    *stepfun*)
-                        echo "   Provider: $(t 'openrouter_provider_stepfun')"
-                        [[ "$ANTHROPIC_MODEL" == *":free" ]] && echo -e "   ${GREEN}🆓 Free Tier${NC}"
-                        ;;
+                    *stepfun*) echo "   Provider: $(t 'openrouter_provider_stepfun')" ;;
                     *claude*|*anthropic*) echo "   Provider: $(t 'openrouter_provider_claude')" ;;
+                    *llama*|*meta-llama*) echo "   Provider: Meta (Llama)" ;;
+                    *gemma*|*google*) echo "   Provider: Google" ;;
+                    *nemotron*|*nvidia*) echo "   Provider: NVIDIA" ;;
+                    *gpt-oss*|*openai*) echo "   Provider: OpenAI (OSS)" ;;
+                    *arcee*|*trinity*) echo "   Provider: Arcee AI" ;;
+                    *liquid*|*lfm*) echo "   Provider: Liquid AI" ;;
+                    "openrouter/free") echo "   Provider: OpenRouter (auto-route free)" ;;
                     *) echo "   Provider: $(t 'openrouter_provider_unknown') ${ANTHROPIC_MODEL})" ;;
                 esac
+                [[ "$ANTHROPIC_MODEL" == *":free" || "$ANTHROPIC_MODEL" == "openrouter/free" ]] && echo -e "   ${GREEN}🆓 Free Tier${NC}"
             fi
         else
             echo -e "   ${YELLOW}Status:${NC} $(t 'openrouter_configured_not_active')"
@@ -1774,6 +1779,8 @@ show_help() {
     echo "  stepfun                 - env StepFun"
     echo "  claude, sonnet, s       - env claude (official)"
     echo "  open <provider>         - env OpenRouter (run 'ccm open' for help)"
+    echo "  open free               - env OpenRouter free model auto-router"
+    echo "  open <model>-free       - env OpenRouter free tier (e.g. qwen-free, llama-free)"
     echo ""
     echo -e "${YELLOW}User-level Settings (highest priority):${NC}"
     echo "  user <provider> [region] - write to ~/.claude/settings.json"
@@ -1955,13 +1962,32 @@ show_open_help() {
     echo -e "${YELLOW}Supported providers:${NC}"
     echo "  claude (default), deepseek, kimi, glm, qwen, minimax, stepfun"
     echo ""
-    echo -e "${YELLOW}Free tier:${NC}"
-    echo "  stepfun-free (sf-free) - stepfun/step-3.5-flash:free"
+    echo -e "${YELLOW}Free tier (🆓):${NC}"
+    echo "  free                              - openrouter/free (auto-routes to free models)"
+    echo "  glm-free                          - z-ai/glm-4.5-air:free"
+    echo "  minimax-free (mm-free)            - minimax/minimax-m2.5:free"
+    echo "  qwen-free                         - qwen/qwen3-coder:free"
+    echo "  qwen-next-free                    - qwen/qwen3-next-80b-a3b-instruct:free"
+    echo "  stepfun-free (sf-free)            - stepfun/step-3.5-flash:free"
+    echo "  llama-free                        - meta-llama/llama-3.3-70b-instruct:free"
+    echo "  gemma-free                        - google/gemma-4-31b-it:free"
+    echo "  gemma-26b-free                    - google/gemma-4-26b-a4b-it:free"
+    echo "  nemotron-free                     - nvidia/nemotron-3-super-120b-a12b:free"
+    echo "  nemotron-nano-free                - nvidia/nemotron-3-nano-30b-a3b:free"
+    echo "  nemotron-9b-free                  - nvidia/nemotron-nano-9b-v2:free"
+    echo "  gpt-oss-free                      - openai/gpt-oss-120b:free"
+    echo "  gpt-oss-20b-free                  - openai/gpt-oss-20b:free"
+    echo "  trinity-free                      - arcee-ai/trinity-large-preview:free"
+    echo "  liquid-free                       - liquid/lfm-2.5-1.2b-thinking:free"
+    echo "  liquid-instruct-free              - liquid/lfm-2.5-1.2b-instruct:free"
     echo ""
     echo -e "${YELLOW}Examples:${NC}"
     echo "  eval \"\$(ccm open claude)\""
     echo "  eval \"\$(ccm open kimi)\""
-    echo "  eval \"\$(ccm open sf-free)\""
+    echo "  eval \"\$(ccm open free)\"              # auto-route to free models"
+    echo "  eval \"\$(ccm open qwen-free)\""
+    echo "  eval \"\$(ccm open llama-free)\""
+    echo "  eval \"\$(ccm open nemotron-free)\""
 }
 
 emit_openrouter_exports() {
@@ -2037,6 +2063,118 @@ emit_openrouter_exports() {
         "stepfun-free"|"sf-free")
             model="stepfun/step-3.5-flash:free"
             small="stepfun/step-3.5-flash:free"
+            default_sonnet="$model"
+            default_opus="$model"
+            default_haiku="$model"
+            ;;
+        "free"|"auto-free")
+            model="openrouter/free"
+            small="openrouter/free"
+            default_sonnet="$model"
+            default_opus="$model"
+            default_haiku="$model"
+            ;;
+        "glm-free")
+            model="z-ai/glm-4.5-air:free"
+            small="z-ai/glm-4.5-air:free"
+            default_sonnet="$model"
+            default_opus="$model"
+            default_haiku="$model"
+            ;;
+        "minimax-free"|"mm-free")
+            model="minimax/minimax-m2.5:free"
+            small="minimax/minimax-m2.5:free"
+            default_sonnet="$model"
+            default_opus="$model"
+            default_haiku="$model"
+            ;;
+        "qwen-free")
+            model="qwen/qwen3-coder:free"
+            small="qwen/qwen3-coder:free"
+            default_sonnet="$model"
+            default_opus="$model"
+            default_haiku="$model"
+            ;;
+        "qwen-next-free")
+            model="qwen/qwen3-next-80b-a3b-instruct:free"
+            small="qwen/qwen3-next-80b-a3b-instruct:free"
+            default_sonnet="$model"
+            default_opus="$model"
+            default_haiku="$model"
+            ;;
+        "llama-free")
+            model="meta-llama/llama-3.3-70b-instruct:free"
+            small="meta-llama/llama-3.3-70b-instruct:free"
+            default_sonnet="$model"
+            default_opus="$model"
+            default_haiku="$model"
+            ;;
+        "gemma-free")
+            model="google/gemma-4-31b-it:free"
+            small="google/gemma-4-31b-it:free"
+            default_sonnet="$model"
+            default_opus="$model"
+            default_haiku="$model"
+            ;;
+        "gemma-26b-free")
+            model="google/gemma-4-26b-a4b-it:free"
+            small="google/gemma-4-26b-a4b-it:free"
+            default_sonnet="$model"
+            default_opus="$model"
+            default_haiku="$model"
+            ;;
+        "nemotron-free")
+            model="nvidia/nemotron-3-super-120b-a12b:free"
+            small="nvidia/nemotron-3-super-120b-a12b:free"
+            default_sonnet="$model"
+            default_opus="$model"
+            default_haiku="$model"
+            ;;
+        "nemotron-nano-free")
+            model="nvidia/nemotron-3-nano-30b-a3b:free"
+            small="nvidia/nemotron-3-nano-30b-a3b:free"
+            default_sonnet="$model"
+            default_opus="$model"
+            default_haiku="$model"
+            ;;
+        "nemotron-9b-free")
+            model="nvidia/nemotron-nano-9b-v2:free"
+            small="nvidia/nemotron-nano-9b-v2:free"
+            default_sonnet="$model"
+            default_opus="$model"
+            default_haiku="$model"
+            ;;
+        "gpt-oss-free")
+            model="openai/gpt-oss-120b:free"
+            small="openai/gpt-oss-20b:free"
+            default_sonnet="$model"
+            default_opus="$model"
+            default_haiku="openai/gpt-oss-20b:free"
+            ;;
+        "gpt-oss-20b-free")
+            model="openai/gpt-oss-20b:free"
+            small="openai/gpt-oss-20b:free"
+            default_sonnet="$model"
+            default_opus="$model"
+            default_haiku="$model"
+            ;;
+        "trinity-free")
+            model="arcee-ai/trinity-large-preview:free"
+            small="arcee-ai/trinity-large-preview:free"
+            default_sonnet="$model"
+            default_opus="$model"
+            default_haiku="$model"
+            ;;
+        "liquid-free")
+            model="liquid/lfm-2.5-1.2b-thinking:free"
+            small="liquid/lfm-2.5-1.2b-instruct:free"
+            default_sonnet="$model"
+            default_opus="$model"
+            default_haiku="liquid/lfm-2.5-1.2b-instruct:free"
+            ;;
+        "liquid-instruct-free")
+            model="liquid/lfm-2.5-1.2b-instruct:free"
+            small="liquid/lfm-2.5-1.2b-instruct:free"
             default_sonnet="$model"
             default_opus="$model"
             default_haiku="$model"
