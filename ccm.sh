@@ -1980,6 +1980,7 @@ show_open_help() {
     echo "  trinity-free                      - arcee-ai/trinity-large-preview:free"
     echo "  liquid-free                       - liquid/lfm-2.5-1.2b-thinking:free"
     echo "  liquid-instruct-free              - liquid/lfm-2.5-1.2b-instruct:free"
+    echo "  elephant-free                     - openrouter/elephant-alpha"
     echo ""
     echo -e "${YELLOW}Examples:${NC}"
     echo "  eval \"\$(ccm open claude)\""
@@ -2175,6 +2176,13 @@ emit_openrouter_exports() {
         "liquid-instruct-free")
             model="liquid/lfm-2.5-1.2b-instruct:free"
             small="liquid/lfm-2.5-1.2b-instruct:free"
+            default_sonnet="$model"
+            default_opus="$model"
+            default_haiku="$model"
+            ;;
+        "elephant-free")
+            model="openrouter/elephant-alpha"
+            small="openrouter/elephant-alpha"
             default_sonnet="$model"
             default_opus="$model"
             default_haiku="$model"
